@@ -50,17 +50,18 @@ xfun::pkg_attach2("tidyverse", # musíme mít nainstalovaný minimálně balíč
 # GDAL také umožňuje tzv. řetízkování odkazů na soubory (lze tedy načítat třeba soubory, které jsou online v ZIP souboru, viz https://gdal.org/en/stable/user/virtual_file_systems.html)
 # závislost na PROJ umožňuje práci se souřadnicovými referenčními systémy (CRS)
 # závislost na GEOS umožňuje výpočty měr a práci s tzv. predikáty
-# závislost na S2 umožňuje výpočty ploch a délek na sféře (dá se vypínat, pokud někdo nemá rád Google)
+# závislost na S2 (neboli S2 GEOMETRY) umožňuje výpočty ploch a délek na sféře (dá se vypínat funkcí sf_use_s2(), pokud někdo nemá rád Google)
 
 
 # Základní třídy související s vektorovými geodaty v R --------------------
 
-# vyplatí se znát rozdíly mezi třídami, které se vyskytují ve vztahi k balíčku sf; pak porozumíme lépe dokumentaci, kde se vyskytují zkratky
+# vyplatí se znát rozdíly mezi třídami, které se vyskytují ve vztahiu k balíčku sf; pak porozumíme lépe dokumentaci, kde se vyskytují zkratky
+# jinak lze rychleji objekty kýžené třídy stavět funkcemi balíčku sfheaders
 
 # např. funkce st_point() akceptuje vektor se souřadnicemi
 ?st_point # otazník před názvem funkce spustí dokumentaci k funkci
 
-# pokud si vymyslíme název´objektu a použijeme tzv. přiřazovací operátor (zkratka ALT + -), dostaneme do Globálního prostředí (vpavo nahoře) právě tento nový objekt
+# pokud si vymyslíme název objektu a použijeme tzv. přiřazovací operátor (zkratka ALT + -), dostaneme do Globálního prostředí (vpavo nahoře) právě tento nový objekt
 bod <- st_point(c(15, 
                   50))
 
@@ -68,7 +69,7 @@ bod <- st_point(c(15,
 class(bod)
 
 # vyšší třídou je sfc, simple feature column
-# vzniká např. aplikací funkce st_sfc
+# vzniká např. aplikací funkce st_sfc()
 bod <- bod |> 
   st_sfc(crs = "EPSG:4326") # zde již můžeme upřesnit, o jaký CRS se jedná
 
@@ -80,13 +81,13 @@ class(bod)
 # ale už bychom měli vidět i typickou hlavičku
 bod
 
-# nejvišší třídu sf, tj. simple feature, dostaneme aplikací funkce st_sf(), pokud existuje geometrie
+# nejvyšší třídu sf, tj. simple feature, dostaneme aplikací funkce st_sf(), pokud existuje geometrie
 bod <- bod |> 
   st_sf()
 
 # když se nám nelíbí název geometrického sloupce, lze ji přenastavit funkcí st_set_geometry()
 bod <- bod |> 
-  st_set_geometry("geom")
+  st_set_geometry("geom") # u této funkce však záleží, co je jejím argumentem, protože podle toho se pak přepíná
 
 bod
 
@@ -176,13 +177,13 @@ ggplot() +
 
 # vypočítejme plochu území Česka
 hranice <- hranice |> 
-  mutate(geom2 = st_transform(geometry, # mutate() může přidat sloupec na základě jiného sloupce; de přidáváme druhou, transformovanou, geometrii 
+  mutate(geom2 = st_transform(geometry, # mutate() může přidat sloupec na základě jiného sloupce; zde přidáváme druhou, transformovanou, geometrii 
                               3035),
-         a = st_area(geom2)) # ze druhé geometrie (kde by měla být splněna plochojevnost), funkcí st_area() dostaneme plochu v m^2
+         a = st_area(geom2)) # ze druhé geometrie (kde by měla být splněna plochojevnost) funkcí st_area() dostaneme plochu v m^2
 
 # funkce balíčku units můžeme využít k převodu jednotek
 hranice <- hranice |> 
-  mutate(a2 = units::set_units(a, km2))
+  mutate(a2 = units::set_units(a, km2)) # jednotky lze psát i do uvozovek
 
 hranice <- hranice |> 
   mutate(a3 = units::set_units(a, ft2))
@@ -198,16 +199,16 @@ bod |>
   write_sf("results/nas_bod.gpkg") # pokud jsme v R projektu, lze se v cestě k souboru odkazovat relativně na složku, kterou tam máme (ať máme vše uspořádáno)
 
 # soubory typu geopackage mohou obsahovat více vektorových vrstev najednou (i v různých CRS) a třeba i jen tabulky bez geometrie
-# co je obsahem geopackage, zjistíme např. funkcí st_layers()
+# co je obsahem geopackage, zjistíme např. funkcí st_layers(), která podobně ukáže i vrstvy ve složce
 st_layers("results/nas_bod.gpkg")
 
-# protože je k jsou k ukládání využívány drivery knihovny GDAL, lze volit i přípony kml, geojson, kml apod.
+# protože jsou k ukládání využívány drivery knihovny GDAL, lze volit i přípony kml, geojson, kml apod.
 
 
 # Tvorba vektorových geodat z tabulek obsahujících souřadnice -------------
 
 # jako příklad jsme si vzali metadata vodoměrných stanic, která jsou publikována v JSON souboru online
-# funkce jsonlite::fromJSON konvertuje obsah JSON souboru na seznam
+# funkce jsonlite::fromJSON() konvertuje obsah JSON souboru na seznam
 meta <- jsonlite::fromJSON("https://opendata.chmi.cz/hydrology/historical/metadata/meta1.json")
 
 # z prvků tohoto seznamu lze pak vytvořit tabulku
@@ -218,7 +219,7 @@ meta <- meta$data$data$values |> # toto je matice s textovými řetězci
               str_split_1(",")) # kde vycházíme z jednoprvkového vektoru, který si ale můžeme podle čárky rozdělit
 
 # tato tabulka obsahuje souřadnice ve sloupcích GEOGR1 a GEOGR2
-# funkcí st_as_sf() můžeme získat rovnou sf
+# funkcí st_as_sf(), která je určena ke konverzi objektů bez geometrie, můžeme získat rovnou sf
 meta <- meta |> 
   st_as_sf(coords = c("GEOGR2", # pozor na obrácené pořadí souřadnic v tabulce
                       "GEOGR1"), # dříve byly vyžadovány numerické sloupce se souřadnicemi, ale dnes už ani textové sloupce jaksi nevadí
@@ -238,11 +239,11 @@ tm_shape(meta) +
 # Predikáty ---------------------------------------------------------------
 
 # řekněmě, že chceme zjistit, kolik vodoměrných stanic máme mimo území Česka
-# hranaté závorky slouží jako zkratka funkce st_filter(), což je příbuzná fukce st_join() pro prostorové propojování
+# hranaté závorky slouží jako zkratka funkce st_filter(), což je příbuzná funkce st_join() pro prostorové propojování
 meta_mimo <- meta[hranice, # filtrování hranatými závorkami připomíná starou známou práci s řádky základního R, jenom zde dodáváme polygon na první místo
                   op = st_disjoint] # na druhém místě může být zvolený predikát - st_intersects vybere body uvnitř polygonu, st_disjoint vybere body mimo polygon
 
-# takových stanice je aktuálně 11 (většinou z území Polska)
+# takových stanic je aktuálně 11 (většinou z území Polska)
 meta_mimo
 
 # podívejme se ještě na seznam predikátů
@@ -251,7 +252,7 @@ meta_mimo
 
 # Rastrová geodata --------------------------------------------------------
 
-# ukázky s rastrovými geodaty jsme nestihli, ale odkazovali dívali jsme se na soubory klimatických scénářů, které vznikly v rámci projektu PERUN
+# ukázky s rastrovými geodaty jsme nestihli, ale dívali jsme se na soubory klimatických scénářů, které vznikly v rámci projektu PERUN
 # viz https://www.perun-klima.cz/scenare/
 
 # na webových stránkách se nacházejí ZIP soubory, z nichž si můžeme funkcí terra::rast() vzít rastrová geodata do prostředí R pro další zpracování
