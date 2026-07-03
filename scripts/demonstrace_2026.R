@@ -21,7 +21,7 @@
 
 # CTRL + SHIFT + M vloží nativní pipe (pokud máme v nastavení - najdeme v Tools/Global Options.../Code)
 # CTRL + SHIFT + N založí nový R skript
-# CTRL + SHIFT + C zakomentuje celou řádku, na které právě jsme
+# CTRL + SHIFT + C zakomentuje celou řádku, na které právě jsme, nebo označený blok řádků
 # CRTL + ENTER odešle část kódu do (dolů do konzole) k vyhodnocení (stačí, když budeme na začátku nebi na konci logické části kódu)
 
 # samozřejmě existuje možnost označit v R skriptu všechen kód (CRTL + A) a pustit vše
