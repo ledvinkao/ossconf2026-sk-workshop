@@ -238,7 +238,7 @@ tm_shape(meta) +
 # Predikáty ---------------------------------------------------------------
 
 # řekněmě, že chceme zjistit, kolik vodoměrných stanic máme mimo území Česka
-# hranaté závorky slouží jako zkratka funkce st_filter(), pcož je příbuzná fukce st_join() pro prostorové propojování
+# hranaté závorky slouží jako zkratka funkce st_filter(), což je příbuzná fukce st_join() pro prostorové propojování
 meta_mimo <- meta[hranice, # filtrování hranatými závorkami připomíná starou známou práci s řádky základního R, jenom zde dodáváme polygon na první místo
                   op = st_disjoint] # na druhém místě může být zvolený predikát - st_intersects vybere body uvnitř polygonu, st_disjoint vybere body mimo polygon
 
