@@ -160,7 +160,7 @@ hranice <- hranice |>
 # jak nyní vypadá objekt 'hranice' v konzoli?
 hranice
 
-# a jeme na kreslení
+# a jdeme na kreslení
 # rozdíl v ggplot je v tom, že na sebe vrstvíme více objektů operátorem +
 ggplot() + 
   geom_sf(data = hranice,
