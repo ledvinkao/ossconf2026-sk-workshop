@@ -55,7 +55,7 @@ xfun::pkg_attach2("tidyverse", # musíme mít nainstalovaný minimálně balíč
 
 # Základní třídy související s vektorovými geodaty v R --------------------
 
-# vyplatí se znát rozdíly mezi třídami, které se vyskytují ve vztahiu k balíčku sf; pak porozumíme lépe dokumentaci, kde se vyskytují zkratky
+# vyplatí se znát rozdíly mezi třídami, které se vyskytují ve vztahu k balíčku sf; pak porozumíme lépe dokumentaci, kde se vyskytují zkratky
 # jinak lze rychleji objekty kýžené třídy stavět funkcemi balíčku sfheaders
 
 # např. funkce st_point() akceptuje vektor se souřadnicemi
